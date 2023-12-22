@@ -32,6 +32,20 @@ export class Chat {
     `;
   };
 
+  private generatePromptWalkThrough = (patch: string) => {
+    const answerLanguage = process.env.LANGUAGE
+      ? `Answer me in ${process.env.LANGUAGE},`
+      : '';
+
+    const prompt =
+      process.env.PROMPT ||
+        'Below is a code patch, please explain that code:';
+
+    return `${prompt}, ${answerLanguage}:
+    ${patch}
+    `;
+  };
+
   public codeReview = async (patch: string) => {
     if (!patch) {
       return '';
@@ -43,6 +57,20 @@ export class Chat {
     const res = await this.chatAPI.sendMessage(prompt);
 
     console.timeEnd('code-review cost');
+    return res.text;
+  };
+
+  public walkThrough = async (patch: string) => {
+    if (!patch) {
+      return '';
+    }
+
+    console.time('walk-through cost');
+    const prompt = this.generatePromptWalkThrough(patch);
+
+    const res = await this.chatAPI.sendMessage(prompt);
+
+    console.timeEnd('walk-through cost');
     return res.text;
   };
 }

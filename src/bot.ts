@@ -141,6 +141,24 @@ export const robot = (app: Probot) => {
         } catch (e) {
           console.error(`review ${file.filename} failed`, e);
         }
+
+        try {
+          const res = await chat?.walkThrough(patch);
+
+          if (!!res) {
+            await context.octokit.pulls.createReviewComment({
+              repo: repo.repo,
+              owner: repo.owner,
+              pull_number: context.pullRequest().pull_number,
+              commit_id: commits[commits.length - 1].sha,
+              path: file.filename,
+              body: res,
+              position: patch.split('\n').length - 1,
+            });
+          }
+        } catch (e) {
+          console.error(`walkThrough ${file.filename} failed`, e);
+        }
       }
 
       console.timeEnd('gpt cost');
